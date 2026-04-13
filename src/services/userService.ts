@@ -70,6 +70,17 @@ export const userService = {
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
   },
 
+  updateWeight(userId: string, newWeight: number) {
+    const profiles = getProfiles();
+    const idx = profiles.findIndex(p => p.userId === userId);
+    if (idx >= 0) {
+      profiles[idx].weight = newWeight;
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+      return profiles[idx];
+    }
+    return null;
+  },
+
   getProfile(userId: string): UserProfile | null {
     return getProfiles().find(p => p.userId === userId) || null;
   },

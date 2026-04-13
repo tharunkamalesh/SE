@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Flame, Dumbbell, Apple, ArrowLeft } from 'lucide-react';
+import { Activity, Flame, Dumbbell, Apple, ArrowLeft, Target } from 'lucide-react';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -48,7 +48,7 @@ const RecommendationsPage = () => {
             <Card className="glass-card overflow-hidden">
               <div className="fitness-gradient p-6">
                 <h2 className="text-2xl font-display font-bold text-primary-foreground">Your Personalized Plan</h2>
-                <p className="text-primary-foreground/80 mt-1">{rec.summary}</p>
+                <p className="text-primary-foreground/80 mt-1">{rec.reasoning}</p>
               </div>
               <CardContent className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -65,20 +65,34 @@ const RecommendationsPage = () => {
                   <div className="text-center p-4 rounded-lg bg-secondary">
                     <Dumbbell className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-lg font-bold text-foreground">{rec.workoutFrequency}</p>
-                    <p className="text-xs text-muted-foreground">Workout Frequency</p>
+                    <p className="text-xs text-muted-foreground">Workouts/Week</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-secondary">
-                    <Apple className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <Target className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-lg font-bold text-foreground">{rec.intensity}</p>
-                    <p className="text-xs text-muted-foreground">Intensity</p>
+                    <p className="text-xs text-muted-foreground">Intensity Level</p>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <h4 className="font-semibold text-sm text-muted-foreground mb-2">Macro Split</h4>
-                  <div className="flex gap-2">
-                    <Badge variant="secondary">Protein {rec.macros.protein}%</Badge>
-                    <Badge variant="secondary">Carbs {rec.macros.carbs}%</Badge>
-                    <Badge variant="secondary">Fat {rec.macros.fat}%</Badge>
+                <div className="mt-8 p-4 rounded-xl border border-border bg-card">
+                  <h4 className="font-bold text-sm text-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-orange-500" /> Optimal Macro Distribution
+                  </h4>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {[
+                      { label: 'Protein', value: rec.macros.protein, color: 'bg-blue-500' },
+                      { label: 'Carbs', value: rec.macros.carbs, color: 'bg-green-500' },
+                      { label: 'Fats', value: rec.macros.fat, color: 'bg-yellow-500' },
+                    ].map((m, i) => (
+                      <div key={i} className="flex-1">
+                        <div className="flex justify-between text-xs mb-1 font-semibold uppercase">
+                          <span>{m.label}</span>
+                          <span>{m.value}%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className={`h-full ${m.color}`} style={{ width: `${m.value}%` }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>

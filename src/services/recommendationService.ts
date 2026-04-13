@@ -1,6 +1,8 @@
 // Recommendation Service - AI logic for personalized fitness recommendations
 
 import type { UserProfile } from './userService';
+import { workoutService, WorkoutPlan } from './workoutService';
+import { dietService, DietPlan } from './dietService';
 
 export interface Recommendation {
   bmi: number;
@@ -11,6 +13,9 @@ export interface Recommendation {
   macros: { protein: number; carbs: number; fat: number };
   workoutFrequency: string;
   intensity: string;
+  workoutPlan: WorkoutPlan;
+  dietPlan: DietPlan;
+  reasoning: string;
 }
 
 function calculateBMI(weight: number, heightCm: number): number {
@@ -26,7 +31,6 @@ function getBMICategory(bmi: number): string {
 }
 
 function estimateBMR(weight: number, heightCm: number, age: number): number {
-  // Mifflin-St Jeor
   return 10 * weight + 6.25 * heightCm - 5 * age + 5;
 }
 
@@ -41,11 +45,19 @@ export const recommendationService = {
     const bmr = estimateBMR(profile.weight, profile.height, profile.age);
     const tdee = bmr * (activityMultipliers[profile.activityLevel] || 1.55);
 
+    // Call "Workout Microservice"
+    const workoutPlan = workoutService.getWorkoutPlan(profile.fitnessGoal);
+    // Call "Diet Microservice"
+    const dietPlan = dietService.getDietPlan(profile.fitnessGoal);
+
     let dailyCalories: number;
     let macros: { protein: number; carbs: number; fat: number };
     let workoutFrequency: string;
     let intensity: string;
     let summary: string;
+    let reasoning: string;
+
+    reasoning = `Based on your BMI of ${bmi} (${bmiCategory}) and goal of ${profile.fitnessGoal.replace('_', ' ')}, we've optimized your hormonal response and metabolic rate. `;
 
     switch (profile.fitnessGoal) {
       case 'weight_loss':
@@ -53,30 +65,47 @@ export const recommendationService = {
         macros = { protein: 40, carbs: 30, fat: 30 };
         workoutFrequency = '5-6 days/week';
         intensity = 'Moderate to High';
-        summary = 'Your plan focuses on a caloric deficit with high protein to preserve muscle while losing fat. Combine cardio with strength training for optimal results.';
+        summary = dietPlan.description;
+        reasoning += "A caloric deficit is necessary for fat loss, while high protein prevents muscle wastage.";
         break;
       case 'muscle_gain':
         dailyCalories = Math.round(tdee + 300);
         macros = { protein: 35, carbs: 45, fat: 20 };
         workoutFrequency = '4-5 days/week';
         intensity = 'High';
-        summary = 'Your plan uses a caloric surplus with emphasis on progressive overload. Focus on compound movements and adequate protein intake for muscle hypertrophy.';
+        summary = dietPlan.description;
+        reasoning += "Surplus calories provide energy for tissue repair and growth during resistance training.";
         break;
-      case 'endurance':
-        dailyCalories = Math.round(tdee + 100);
-        macros = { protein: 25, carbs: 55, fat: 20 };
-        workoutFrequency = '5-6 days/week';
-        intensity = 'Moderate';
-        summary = 'Your plan prioritizes cardiovascular conditioning with carb-rich nutrition for sustained energy. Gradually increase workout duration and intensity.';
-        break;
-      default: // maintenance
+      default:
         dailyCalories = Math.round(tdee);
         macros = { protein: 30, carbs: 40, fat: 30 };
         workoutFrequency = '3-4 days/week';
         intensity = 'Moderate';
-        summary = 'Your plan maintains current fitness with balanced nutrition. Focus on consistency and progressive challenge to prevent plateaus.';
+        summary = dietPlan.description;
+        reasoning += "Maintenance ensures you stay at your current weight while gradually improving body composition.";
     }
 
-    return { bmi, bmiCategory, fitnessGoal: profile.fitnessGoal, summary, dailyCalories, macros, workoutFrequency, intensity };
+    return {
+      bmi,
+      bmiCategory,
+      fitnessGoal: profile.fitnessGoal,
+      summary,
+      dailyCalories,
+      macros,
+      workoutFrequency,
+      intensity,
+      workoutPlan,
+      dietPlan,
+      reasoning
+    };
   },
+
+  getStatus() {
+    return {
+      user: 'Running',
+      ai: 'Running',
+      workout: 'Running',
+      diet: 'Running',
+    };
+  }
 };
