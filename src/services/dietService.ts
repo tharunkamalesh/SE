@@ -52,7 +52,7 @@ const dietPlans: Record<string, DietPlan> = {
     tips: [
       'Eat every 3 hours to maintain anabolic state',
       'Consume protein within 30 min post-workout',
-      'Don't skip complex carbs — they fuel growth',
+      "Don't skip complex carbs — they fuel growth",
       'Get 7-9 hours of sleep for recovery',
     ],
   },
